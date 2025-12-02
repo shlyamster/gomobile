@@ -242,7 +242,7 @@ func doCopyAll(dst, src string) error {
 		}
 		outpath := filepath.Join(dst, path[prefixLen:])
 		if info.IsDir() {
-			return os.Mkdir(outpath, 0755)
+			return os.MkdirAll(outpath, 0755)
 		}
 		in, err := os.Open(path)
 		if err != nil {

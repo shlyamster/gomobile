@@ -233,21 +233,24 @@ func printcmd(format string, args ...interface{}) {
 
 // "Build flags", used by multiple commands.
 var (
-	buildA          bool        // -a
-	buildI          bool        // -i
-	buildN          bool        // -n
-	buildV          bool        // -v
-	buildX          bool        // -x
-	buildO          string      // -o
-	buildGcflags    string      // -gcflags
-	buildLdflags    string      // -ldflags
-	buildTarget     string      // -target
-	buildTrimpath   bool        // -trimpath
-	buildWork       bool        // -work
-	buildBundleID   string      // -bundleid
-	buildIOSVersion string      // -iosversion
-	buildAndroidAPI int         // -androidapi
-	buildTags       stringsFlag // -tags
+	buildA            bool        // -a
+	buildI            bool        // -i
+	buildN            bool        // -n
+	buildV            bool        // -v
+	buildX            bool        // -x
+	buildO            string      // -o
+	buildGcflags      string      // -gcflags
+	buildLdflags      string      // -ldflags
+	buildTarget       string      // -target
+	buildTrimpath     bool        // -trimpath
+	buildWork         bool        // -work
+	buildBundleID     string      // -bundleid
+	buildIOSVersion   string      // -iosversion
+	buildMacOSVersion string      // -macosversion
+	buildTVOSVersion  string      // -tvosversion
+	buildAndroidAPI   int         // -androidapi
+	buildTags         stringsFlag // -tags
+	buildVCS          bool        // -buildvcs
 )
 
 func addBuildFlags(cmd *command) {
@@ -257,12 +260,15 @@ func addBuildFlags(cmd *command) {
 	cmd.flag.StringVar(&buildTarget, "target", "android", "")
 	cmd.flag.StringVar(&buildBundleID, "bundleid", "", "")
 	cmd.flag.StringVar(&buildIOSVersion, "iosversion", "13.0", "")
+	cmd.flag.StringVar(&buildMacOSVersion, "macosversion", "10.15", "")
+	cmd.flag.StringVar(&buildTVOSVersion, "tvosversion", "16.0", "")
 	cmd.flag.IntVar(&buildAndroidAPI, "androidapi", minAndroidAPI, "")
 
 	cmd.flag.BoolVar(&buildA, "a", false, "")
 	cmd.flag.BoolVar(&buildI, "i", false, "")
 	cmd.flag.BoolVar(&buildTrimpath, "trimpath", false, "")
 	cmd.flag.Var(&buildTags, "tags", "")
+	cmd.flag.BoolVar(&buildVCS, "buildvcs", true, "")
 }
 
 func addBuildFlagsNVXWork(cmd *command) {
@@ -332,6 +338,9 @@ func goCmdAt(at string, subcmd string, srcs []string, env []string, args ...stri
 	}
 	if buildWork {
 		cmd.Args = append(cmd.Args, "-work")
+	}
+	if !buildVCS {
+		cmd.Args = append(cmd.Args, "-buildvcs=false")
 	}
 	cmd.Args = append(cmd.Args, args...)
 	cmd.Args = append(cmd.Args, srcs...)
@@ -428,6 +437,9 @@ func parseBuildTarget(buildTarget string) ([]targetInfo, error) {
 	// Special case to build iossimulator if -target=ios
 	if buildTarget == "ios" {
 		addPlatform("iossimulator")
+	}
+	if buildTarget == "tvos" {
+		addPlatform("tvossimulator")
 	}
 
 	return targets, nil

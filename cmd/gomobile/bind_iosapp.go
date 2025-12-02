@@ -72,6 +72,9 @@ func goAppleBind(gobind string, pkgs []*packages.Package, targets []targetInfo) 
 			if bindPrefix != "" {
 				cmd.Args = append(cmd.Args, "-prefix="+bindPrefix)
 			}
+			if bindMobilePath != "" {
+				cmd.Args = append(cmd.Args, "-mobilepath="+bindMobilePath)
+			}
 			for _, p := range pkgs {
 				cmd.Args = append(cmd.Args, p.PkgPath)
 			}
@@ -96,11 +99,11 @@ func goAppleBind(gobind string, pkgs []*packages.Package, targets []targetInfo) 
 		t := t
 		buildWG.Go(func() error {
 			outDir := outDirsForPlatform[t.platform]
-			outSrcDir := filepath.Join(outDir, "src")
+			outSrcDir := filepath.Join(outDir, "src", "gobind")
 
 			if modulesUsed {
 				// Copy the source directory for each architecture for concurrent building.
-				newOutSrcDir := filepath.Join(outDir, "src-"+t.arch)
+				newOutSrcDir := filepath.Join(outDir, "src-"+t.platform+"-"+t.arch)
 				if !buildN {
 					if err := doCopyAll(newOutSrcDir, outSrcDir); err != nil {
 						return err
@@ -321,7 +324,7 @@ func frameworkLayoutForTarget(t targetInfo, title string) (*frameworkLayout, err
 				filepath.Join("Versions/Current", title): title,
 			},
 		}, nil
-	case "ios", "iossimulator":
+	case "ios", "iossimulator", "tvos", "tvossimulator":
 		return &frameworkLayout{
 			headerPath:    "Headers",
 			binaryPath:    ".",
@@ -380,7 +383,7 @@ func appleArchiveFilepath(name string, t targetInfo) string {
 }
 
 func goAppleBindArchive(out string, env []string, gosrc string) error {
-	return goBuildAt(gosrc, "./gobind", env, "-buildmode=c-archive", "-o", out)
+	return goBuildAt(gosrc, ".", env, "-buildmode=c-archive", "-o", out)
 }
 
 var appleBindHeaderTmpl = template.Must(template.New("apple.h").Parse(`

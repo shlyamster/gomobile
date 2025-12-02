@@ -26,10 +26,12 @@ var (
 	lang          = flag.String("lang", "", "target languages for bindings, either java, go, or objc. If empty, all languages are generated.")
 	outdir        = flag.String("outdir", "", "result will be written to the directory instead of stdout.")
 	javaPkg       = flag.String("javapkg", "", "custom Java package path prefix. Valid only with -lang=java.")
+	libname       = flag.String("libname", "gojni", "custom library name. Valid only with -lang=java.")
 	prefix        = flag.String("prefix", "", "custom Objective-C name prefix. Valid only with -lang=objc.")
 	bootclasspath = flag.String("bootclasspath", "", "Java bootstrap classpath.")
 	classpath     = flag.String("classpath", "", "Java classpath.")
 	tags          = flag.String("tags", "", "build tags.")
+	mobilepath    = flag.String("mobilepath", "", "path to golang.org/x/mobile source directory.")
 )
 
 var usage = `The Gobind tool generates Java language bindings for Go.
@@ -152,10 +154,10 @@ func run() {
 	}
 	for _, l := range langs {
 		for i, pkg := range typePkgs {
-			genPkg(l, pkg, astPkgs[i], typePkgs, classes, otypes)
+			genPkg(l, pkg, astPkgs[i], typePkgs, classes, otypes, *libname)
 		}
 		// Generate the error package and support files
-		genPkg(l, nil, nil, typePkgs, classes, otypes)
+		genPkg(l, nil, nil, typePkgs, classes, otypes, *libname)
 	}
 }
 

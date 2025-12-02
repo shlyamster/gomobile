@@ -142,7 +142,8 @@ func Delete(num int32) {
 	defer refs.Unlock()
 	o, ok := refs.objs[num]
 	if !ok {
-		panic(fmt.Sprintf("seq.Delete unknown refnum: %d", num))
+		// panic(fmt.Sprintf("seq.Delete unknown refnum: %d", num))
+		return
 	}
 	if o.cnt <= 1 {
 		delete(refs.objs, num)

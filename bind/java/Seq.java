@@ -99,7 +99,7 @@ public class Seq {
 	public static native void incGoRef(int refnum, GoObject ref);
 
 	// Informs the Go ref tracker that Java is done with this refnum.
-	static native void destroyRef(int refnum);
+	public static native void destroyRef(int refnum);
 
 	// decRef is called from seq.FinalizeRef
 	static void decRef(int refnum) {

@@ -35,7 +35,7 @@ func isApplePlatform(platform string) bool {
 	return contains(applePlatforms, platform)
 }
 
-var applePlatforms = []string{"ios", "iossimulator", "macos", "maccatalyst"}
+var applePlatforms = []string{"ios", "iossimulator", "macos", "maccatalyst", "tvos", "tvossimulator"}
 
 func platformArchs(platform string) []string {
 	switch platform {
@@ -44,6 +44,10 @@ func platformArchs(platform string) []string {
 	case "iossimulator":
 		return []string{"arm64", "amd64"}
 	case "macos", "maccatalyst":
+		return []string{"arm64", "amd64"}
+	case "tvos":
+		return []string{"arm64"}
+	case "tvossimulator":
 		return []string{"arm64", "amd64"}
 	case "android":
 		return []string{"arm", "arm64", "386", "amd64"}
@@ -71,6 +75,8 @@ func platformOS(platform string) string {
 		// We also apply a "macos" or "maccatalyst" build tag, respectively.
 		// See below for additional context.
 		return "ios"
+	case "tvos", "tvossimulator":
+		return "darwin"
 	default:
 		panic(fmt.Sprintf("unexpected platform: %s", platform))
 	}
@@ -98,6 +104,8 @@ func platformTags(platform string) []string {
 		// To help discriminate between darwin, ios, macos, and maccatalyst
 		// targets, there is also a "maccatalyst" tag.
 		return []string{"macos", "maccatalyst"}
+	case "tvos", "tvossimulator":
+		return []string{"ios", "tvos"}
 	default:
 		panic(fmt.Sprintf("unexpected platform: %s", platform))
 	}
@@ -252,6 +260,19 @@ func envInit() (err error) {
 				if arch == "arm64" {
 					cflags += " -fembed-bitcode"
 				}
+				cflags += " -mmacosx-version-min=" + buildMacOSVersion
+			case "tvos":
+				goos = "ios"
+				sdk = "appletvos"
+				clang, cflags, err = envClang(sdk)
+				cflags += " -target arm64-apple-tvos" + buildTVOSVersion
+				cflags += " -fembed-bitcode"
+			case "tvossimulator":
+				goos = "ios"
+				sdk = "appletvsimulator"
+				clang, cflags, err = envClang(sdk)
+				cflags += " -target x86_64-apple-tvos" + buildTVOSVersion + "-simulator"
+				cflags += " -fembed-bitcode"
 			default:
 				panic(fmt.Errorf("unknown Apple target: %s/%s", platform, arch))
 			}
